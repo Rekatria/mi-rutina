@@ -40,6 +40,10 @@
   .prog{font-size:13px;color:var(--muted);margin-top:6px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
   .card.done{border-color:#24563a;background:#14201a}
+  .card.skip{opacity:.55}
+  .nota{font-size:12.5px;color:#c8f03c;margin-top:4px;line-height:1.35}
+  input.mins{width:100%;box-sizing:border-box;margin:4px 0 10px;background:#0e1013;border:1px solid var(--line);color:var(--text);border-radius:9px;padding:10px;font:600 16px Inter;text-align:center}
+  input.mins:focus{outline:none;border-color:var(--accent)}
   .chead{display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer;user-select:none}
   .num{flex:none;width:34px;height:34px;border-radius:10px;background:var(--card2);display:grid;place-items:center;font:700 15px "Barlow Condensed";color:var(--muted)}
   .card.done .num{background:var(--ok);color:#06210f}
@@ -424,6 +428,7 @@ const PAT = {
   incline:{eq:'db', farOff:[3,-2], a:{P:[92,102], to:145, hd:15, A:[122,127], kb:90, ft:0, W:[64,38], eb:250}, b:{W:[69,75]}, back:inclineBench},
   inclineSmith:{eq:'bar', farOff:[3,-2], a:{P:[92,102], to:145, hd:15, A:[122,127], kb:90, ft:0, W:[64,38], eb:250}, b:{W:[69,75]},
            back:inclineBench + LN(58,-10,58,130,3) + LN(78,-10,78,130,3)},
+  inclineBar:{eq:'bar', farOff:[3,-2], a:{P:[92,102], to:145, hd:15, A:[122,127], kb:90, ft:0, W:[64,38], eb:250}, b:{W:[69,75]}, back:inclineBench},
   inclineMachine:{eq:'handle', farOff:[3,-2], a:{P:[92,102], to:145, hd:15, A:[122,127], kb:90, ft:0, W:[64,38], eb:250}, b:{W:[69,75]},
            back:j=>inclineBench + LN(j.W[0],j.W[1],112,10,3)},
   chestMachine:{eq:'handle', a:{P:[84,104], to:100, A:[112,127], kb:90, ft:0, W:[90,72], eb:250}, b:{W:[119,70]},
@@ -436,6 +441,7 @@ const PAT = {
   /* --- hombros --- */
   ohp:    {eq:'db', a:{...SEATED, W:[93,62], eb:270}, b:{W:[89,23]}, back:seatUp()},
   ohpMachine:{eq:'handle', a:{...SEATED, W:[93,62], eb:270}, b:{W:[89,23]}, back:seatUp()},
+  ohpStand:{eq:'db', a:{...STAND, to:92, W:[108,27], eb:270}, b:{W:[104,-9]}},
   ohpSmith:{eq:'bar', a:{...SEATED, W:[97,56], eb:270}, b:{W:[92,22]}, back:seatUp() + LN(86,-10,86,130,3) + LN(106,-10,106,130,3)},
   lateral:{v:'front', view:'frente', eq:'db', a:{abd:8, el:6, h:6}, b:{abd:86}},
   lateralCable:{v:'front', view:'frente', eq:'handle', a:{abd:8, el:6, h:6, abdL:10, elL:4}, b:{abd:86}, fcableR:[62,128]},
@@ -590,6 +596,12 @@ const V = {
     'Empujá hacia arriba hasta que casi se toquen.',
     'Bajá controlado.'],
     tip:'Con más de 45° de inclinación trabajás más hombro que pecho.'},
+  'inclinado-barra': {pat:'inclineBar', eq:'', name:'Press inclinado con barra (libre)', mus:'Pecho (parte alta) y hombro frontal', steps:[
+    'Respaldo del banco a 30–45°. Usá una barra fija (el peso escrito en los discos ya incluye la barra).',
+    'Acostate con los ojos debajo de la barra, omóplatos juntos y pies firmes en el piso.',
+    'Bajá controlado hasta la parte alta del pecho, con los codos un poco cerrados (no a 90° del cuerpo).',
+    'Empujá hasta casi estirar los brazos.'],
+    tip:'No hay rieles que frenen la barra: dejá siempre 1–2 reps en el tanque o pedí que alguien te asista en la última serie.'},
   'inclinado-smith': {pat:'inclineSmith', eq:'', name:'Press inclinado en Smith', mus:'Pecho (parte alta)', steps:[
     'Banco a 30–45° debajo de la barra del Smith.',
     'La barra tiene que bajar a la parte alta del pecho.',
@@ -713,6 +725,12 @@ const V = {
     'Empujá hacia arriba hasta casi estirar los brazos.',
     'Bajá controlado hasta la altura de las orejas o un poco más abajo.'],
     tip:'No arquees la espalda baja para empujar. Si lo hacés, el peso es demasiado.'},
+  'militar-mancuernas-parado': {pat:'ohpStand', eq:'', name:'Press militar con mancuernas, parado', mus:'Hombros, tríceps y core', steps:[
+    'De pie, pies al ancho de la cadera y rodillas apenas flexionadas. Mancuernas a la altura de los hombros, palmas hacia adelante.',
+    'Apretá abdomen y glúteos y mantené las costillas abajo.',
+    'Empujá hacia arriba hasta casi estirar los brazos, sin impulsarte con las piernas.',
+    'Bajá controlado hasta la altura de las orejas o un poco más abajo.'],
+    tip:'Si para subir el peso se te arquea la espalda baja hacia atrás, el peso te está ganando: bajalo.'},
   'press-hombro-maquina': {pat:'ohpMachine', eq:'', name:'Press de hombros en máquina', mus:'Hombros y tríceps', steps:[
     'Ajustá el asiento para que los agarres queden a la altura de los hombros.',
     'Espalda bien apoyada.',
@@ -818,19 +836,19 @@ const V = {
     'Si te resulta fácil, probá con las piernas más estiradas.'],
     tip:'No te balancees. La espalda queda pegada al respaldo, así que no carga la zona lumbar.'},
 
-  'caminata-inclinada': {pat:'walk', eq:'', name:'Caminata inclinada en caminadora', mus:'Cardio', steps:[
+  'caminata-inclinada': {pat:'walk', eq:'', unit:'min', name:'Caminata inclinada en caminadora', mus:'Cardio', steps:[
     'Inclinación al 8–12 % y velocidad de 5–5,5 km/h.',
     'Caminá el tiempo que indica el día, sin agarrarte de las barandas.',
     'Te tiene que costar, pero tenés que poder hablar.',
     'Si se vuelve fácil, subí un poco la inclinación.'],
     tip:'Si te agarrás de la baranda, el ejercicio pierde gran parte del efecto.'},
-  'intervalos': {pat:'bikeFast', eq:'', name:'Intervalos en bici o caminadora', mus:'Cardio', steps:[
+  'intervalos': {pat:'bikeFast', eq:'', unit:'min', name:'Intervalos en bici o caminadora', mus:'Cardio', steps:[
     '2 minutos suaves para entrar en calor.',
     '1 minuto rápido y 1 minuto suave. Repetilo 6 o 7 veces.',
     'Terminá con 2 minutos suaves.',
     'En el minuto rápido tenés que llegar a un esfuerzo de 8/10.'],
     tip:'Si la bici está ocupada, usá la caminadora o el elíptico con el mismo esquema.'},
-  'cardio-suave': {pat:'bike', eq:'', name:'Bici o elíptico suave', mus:'Cardio', steps:[
+  'cardio-suave': {pat:'bike', eq:'', unit:'min', name:'Bici o elíptico suave', mus:'Cardio', steps:[
     'A ritmo constante, el tiempo que indica el día.',
     'Te tiene que costar, pero tenés que poder hablar.',
     'Ajustá la resistencia para que no sea un paseo.',
@@ -838,15 +856,51 @@ const V = {
     tip:'El día de piernas hacelo suave: las piernas ya van a estar cansadas.'}
 };
 
+/* Ejercicios con dos mancuernas: se anota el peso de CADA mancuerna */
+const DB2 = new Set(['bulgara','banca-mancuernas','inclinado-mancuernas','aperturas-mancuernas','rumano-mancuernas',
+  'militar-mancuernas','militar-mancuernas-parado','laterales-mancuernas','curl-mancuernas','curl-martillo']);
+
+/* Indicaciones para la próxima sesión (las actualiza Claude después de revisar cada entrenamiento) */
+const NOTA = {
+  'press-pecho-maquina': 'Trabajá con 45 kg. Cuando hagas 12 reps con 45, subí a 47–50 kg.',
+  'inclinado-barra': 'Probá la barra de 20 kg (o 22,5 si hay) buscando 10–12 reps. Con 15 kg hiciste 15 fáciles.',
+  'aperturas-maquina': 'Subí a 39–41 kg.',
+  'militar-mancuernas': 'Quedate en 8 kg por mancuerna hasta hacer 3×12.',
+  'militar-mancuernas-parado': 'Quedate en 8 kg por mancuerna hasta hacer 3×12. Abdomen firme, sin arquear la espalda.',
+  'laterales-mancuernas': '5 kg por mancuerna (o 4 si te balanceás o suben los hombros) hasta hacer 3×12–15 limpias.',
+  'dips-maquina': 'Las 3 series con 50 kg, buscando 10–12. Cuando hagas 3×12, subí a 54. Descansá 1:30–2 min.',
+  'caminata-inclinada': '15 min. Entrás justo en tu hora y media.'
+};
+
+/* Correcciones a sesiones ya guardadas */
+const FIX = {
+  's1794869371456': {
+    d1b: {v:'inclinado-barra'},             // fue con barra libre, no en Smith
+    d1d: {v:'militar-mancuernas-parado'},   // lo hizo parado
+    d1z: {done:false, skipped:true}         // no hizo caminadora
+  }
+};
+function fixHistory(){
+  S.history.forEach(s => {
+    const f = FIX[s.id]; if(!f) return;
+    (s.items||[]).forEach(it => {
+      const c = f[it.slot]; if(!c) return;
+      if(c.v && V[c.v]){ it.v = c.v; it.name = V[c.v].name; it.unit = V[c.v].unit||'reps'; }
+      if('done' in c) it.done = c.done;
+      if(c.skipped) it.skipped = true;
+    });
+  });
+}
+
 /* =========================================================
    RUTINA: 3 días por grupo muscular
    ========================================================= */
 const R = {
   '1': {name:'Pecho, hombros y tríceps', slots:[
     {id:'d1a', tag:'1', sets:4, reps:'6–10', rest:150, restTxt:'2–3 min', opts:['banca-barra','press-pecho-maquina','banca-mancuernas']},
-    {id:'d1b', tag:'2', sets:3, reps:'8–12', rest:120, restTxt:'2 min', opts:['inclinado-mancuernas','inclinado-smith','inclinado-maquina']},
+    {id:'d1b', tag:'2', sets:3, reps:'8–12', rest:120, restTxt:'2 min', opts:['inclinado-barra','inclinado-mancuernas','inclinado-smith','inclinado-maquina']},
     {id:'d1c', tag:'3', sets:3, reps:'12–15', rest:90, restTxt:'1:30 min', opts:['aperturas-maquina','aperturas-polea','aperturas-mancuernas']},
-    {id:'d1d', tag:'4', sets:3, reps:'8–12', rest:120, restTxt:'2 min', opts:['militar-mancuernas','press-hombro-maquina','militar-smith']},
+    {id:'d1d', tag:'4', sets:3, reps:'8–12', rest:120, restTxt:'2 min', opts:['militar-mancuernas','militar-mancuernas-parado','press-hombro-maquina','militar-smith']},
     {id:'d1e', tag:'5', sets:3, reps:'12–15', rest:60, restTxt:'1 min', opts:['laterales-mancuernas','laterales-polea','laterales-maquina']},
     {id:'d1f', tag:'6', sets:3, reps:'10–12', rest:60, restTxt:'1 min', opts:['triceps-polea','dips-maquina','triceps-cabeza']},
     {id:'d1z', tag:'C', cardio:true, reps:'15 min', opts:['caminata-inclinada','cardio-suave','intervalos']}
@@ -890,7 +944,7 @@ const $ = s => document.querySelector(s);
 
 function normalize(){ if(!R[S.next]) S.next = '1'; if(S.current && !R[S.current.routine]) S.current = null; }
 function loadLocal(){
-  try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const d = JSON.parse(raw); S.next = d.next||'1'; S.current = d.current||null; S.history = d.history||[]; S.medidas = d.medidas||[]; } }catch(e){}
+  try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const d = JSON.parse(raw); S.next = d.next||'1'; S.current = d.current||null; S.history = d.history||[]; S.medidas = d.medidas||[]; fixHistory(); } }catch(e){}
   try{ cfg = JSON.parse(localStorage.getItem(CFG_KEY) || 'null'); }catch(e){ cfg = null; }
   try{ outbox = JSON.parse(localStorage.getItem(OUT_KEY) || '[]'); }catch(e){ outbox = []; }
   normalize();
@@ -972,11 +1026,13 @@ function lastFor(vid){
     if(it.v === vid && it.sets && it.sets.some(x => x.kg!=='' || x.r!=='')) return {sets:it.sets, ts:s.ts};
   return null;
 }
-function fmtSets(sets, unit){
+function fmtSets(sets, unit, vid){
   const w = sets.filter(x=>x.kg!=='' || x.r!=='');
   if(!w.length) return '';
+  if(unit==='min') return w.map(x=>x.r).filter(Boolean).join(' + ')+' min';
   const kgs = [...new Set(w.map(x=>x.kg))], reps = w.map(x=>x.r||'–').join(', '), u = unit==='seg' ? ' s' : '';
-  if(kgs.length===1 && kgs[0]!=='') return kgs[0]+' kg × '+reps+u;
+  const cu = DB2.has(vid) ? ' c/u' : '';
+  if(kgs.length===1 && kgs[0]!=='') return kgs[0]+' kg'+cu+' × '+reps+u;
   if(kgs.length===1) return reps+u;
   return w.map(x=>(x.kg!==''?x.kg+'kg×':'')+(x.r||'–')).join(' · ')+u;
 }
@@ -1063,17 +1119,18 @@ function renderHoy(){
     const v = V[vid];
     const reps = v.reps || sl.reps;
     const isOpen = open.has(sl.id);
-    const last = sl.cardio ? null : lastFor(vid);
-    const lastTxt = last ? fmtSets(last.sets, v.unit) : '';
+    const last = lastFor(vid);
+    const lastTxt = last ? fmtSets(last.sets, v.unit, vid) : '';
     const meta = sl.cardio ? reps : `${sl.sets} × ${reps} · ${sl.restTxt}`;
 
-    h += `<div class="card ${it.done?'done':''} ${isOpen?'open':''}">
+    h += `<div class="card ${it.done?'done':''} ${it.skip?'skip':''} ${isOpen?'open':''}">
       <div class="chead" data-act="toggle" data-slot="${sl.id}">
-        <div class="num">${it.done?'✓':sl.tag}</div>
+        <div class="num">${it.done?'✓':(it.skip?'✗':sl.tag)}</div>
         <div class="ctitle">
           <div class="n">${esc(v.name)}${sl.cardio?'<span class="tag">Cardio</span>':''}</div>
           <div class="m">${meta}</div>
           ${lastTxt?`<div class="last">Última vez: ${esc(lastTxt)}</div>`:''}
+          ${NOTA[vid]?`<div class="nota">🎯 ${esc(NOTA[vid])}</div>`:''}
         </div>
         <svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
       </div>
@@ -1096,7 +1153,7 @@ function renderHoy(){
           if(full) upHint = `<div class="up">✅ La última vez llegaste al tope del rango: hoy subí el peso.</div>`;
         }
         h += `<div class="sub">Series</div>
-          <table class="sets"><thead><tr><th></th><th>kg</th><th>${unitLabel(v)}</th><th></th></tr></thead><tbody>
+          <table class="sets"><thead><tr><th></th><th>${DB2.has(vid)?'kg c/u':'kg'}</th><th>${unitLabel(v)}</th><th></th></tr></thead><tbody>
           ${it.sets.map((st,i)=>{
             const ph = last && last.sets[i] ? last.sets[i] : null;
             return `<tr>
@@ -1106,10 +1163,15 @@ function renderHoy(){
               <td><button class="ck ${st.ok?'on':''}" data-act="set" data-slot="${sl.id}" data-i="${i}" aria-label="Serie hecha">✓</button></td>
             </tr>`;}).join('')}
           </tbody></table>
-          <div class="hint">Tocá ✓ al terminar cada serie y arranca el descanso. Lo que se ve en gris es lo que hiciste la última vez.</div>
+          <div class="hint">${DB2.has(vid)?'<b>Anotá el peso de cada mancuerna</b>, no la suma de las dos. ':''}Tocá ✓ al terminar cada serie y arranca el descanso. Lo que se ve en gris es lo que hiciste la última vez.</div>
           ${upHint}`;
       }
+      if(sl.cardio){
+        h += `<div class="sub">Minutos</div>
+          <input class="mins" inputmode="numeric" data-slot="${sl.id}" data-f="min" value="${esc(it.min||'')}" placeholder="${last&&last.sets[0]&&last.sets[0].r?esc(last.sets[0].r):(topOf(reps)||'15')}">`;
+      }
       h += `<button class="btn pri" data-act="done" data-slot="${sl.id}">${it.done?'Desmarcar':'Marcar como completado'}</button>`;
+      if(sl.cardio) h += `<button class="btn ghost" data-act="skip" data-slot="${sl.id}">${it.skip?'Desmarcar "no lo hice"':'No lo hice hoy'}</button>`;
     }
     h += `</div></div>`;
   });
@@ -1122,10 +1184,10 @@ function renderHoy(){
 function renderHist(){
   if(!S.history.length){ $('#viewHist').innerHTML = '<div class="empty">Todavía no terminaste ninguna sesión.<br>Cuando termines la primera, aparece acá.</div>'; return; }
   $('#viewHist').innerHTML = S.history.map(s => {
-    const items = (s.items||[]).filter(it => it.done || (it.sets && it.sets.some(x=>x.kg!==''||x.r!=='')));
+    const items = (s.items||[]).filter(it => it.done || it.skipped || (it.sets && it.sets.some(x=>x.kg!==''||x.r!=='')));
     return `<div class="card">
       <div class="hd"><b>${esc(dayLabel(s.routine))}</b><span>${fmtDate(s.ts)}</span></div>
-      <ul>${items.map(it=>`<li><span>${it.done?'✓ ':''}${esc(it.name)}</span><span>${esc(fmtSets(it.sets||[], it.unit)||'')}</span></li>`).join('') || '<li><span>Sin ejercicios registrados</span><span></span></li>'}</ul>
+      <ul>${items.map(it=>`<li><span>${it.done?'✓ ':(it.skipped?'✗ ':'')}${esc(it.name)}</span><span>${esc(it.skipped ? 'no lo hizo' : (fmtSets(it.sets||[], it.unit, it.v)||''))}</span></li>`).join('') || '<li><span>Sin ejercicios registrados</span><span></span></li>'}</ul>
     </div>`;
   }).join('');
 }
@@ -1169,9 +1231,13 @@ document.addEventListener('click', async e => {
     } else it.done = false;
     scheduleSave(); render(); return;
   }
+  if(act==='skip'){
+    const it = cur.items[sid]; it.skip = !it.skip; if(it.skip){ it.done = false; open.delete(sid); }
+    scheduleSave(); render(); return;
+  }
   if(act==='done'){
     touch();
-    const it = cur.items[sid]; it.done = !it.done;
+    const it = cur.items[sid]; it.done = !it.done; if(it.done) it.skip = false;
     if(it.done){ open.delete(sid); it.sets.forEach(x=>{ if(x.kg!==''||x.r!=='') x.ok=true; }); }
     scheduleSave(); render(); return;
   }
@@ -1194,21 +1260,24 @@ document.addEventListener('click', async e => {
   }
 });
 document.addEventListener('input', e => {
-  const t = e.target; if(!t.matches('.sets input')) return;
+  const t = e.target;
+  if(t.matches('input.mins')){ touch(); S.current.items[t.dataset.slot].min = t.value.replace(/[^0-9.,]/g,'').replace(',', '.').trim(); scheduleSave(); return; }
+  if(!t.matches('.sets input')) return;
   touch();
   S.current.items[t.dataset.slot].sets[+t.dataset.i][t.dataset.f] = t.value.replace(',', '.').trim();
   scheduleSave();
 });
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { tab = b.dataset.tab; render(); window.scrollTo({top:0}); });
 
-function hasData(cur){ return Object.values(cur.items).some(it => it.done || (it.sets||[]).some(x=>x.kg!==''||x.r!==''||x.ok)); }
+function hasData(cur){ return Object.values(cur.items).some(it => it.done || it.skip || it.min || (it.sets||[]).some(x=>x.kg!==''||x.r!==''||x.ok)); }
 
 async function finish(){
   const cur = S.current, rdef = R[cur.routine], ts = Date.now();
   const rec = {id:'s'+ts, routine:cur.routine, dayName:rdef.name, started:cur.t0||ts, ts, items: rdef.slots.map(sl => {
     const it = cur.items[sl.id], vid = sl.opts[it.opt]||sl.opts[0];
-    return {slot:sl.id, v:vid, name:V[vid].name, unit:V[vid].unit||'reps', done:!!it.done,
-            sets:(it.sets||[]).filter(x=>x.kg!==''||x.r!=='').map(x=>({kg:x.kg, r:x.r}))};
+    const sets = sl.cardio ? (it.min ? [{kg:'', r:it.min}] : [])
+                           : (it.sets||[]).filter(x=>x.kg!==''||x.r!=='').map(x=>({kg:x.kg, r:x.r}));
+    return Object.assign({slot:sl.id, v:vid, name:V[vid].name, unit:V[vid].unit||'reps', done:!!it.done, sets}, it.skip ? {skipped:true} : {});
   })};
   S.history.unshift(rec);
   S.next = nextOf(cur.routine);
@@ -1263,7 +1332,7 @@ async function connect(){
     S.history = pendSes.concat(d.sesiones||[]).filter(x => x && !seen.has(x.id||x.ts) && seen.add(x.id||x.ts));
     const seenM = new Set();
     S.medidas = pendMed.concat(d.medidas||[]).filter(x => x && !seenM.has(x.id) && seenM.add(x.id));
-    normalize(); syncState = 'ok'; syncErr = '';
+    fixHistory(); normalize(); syncState = 'ok'; syncErr = '';
     saveLocal(); setStatus(); render();
     if(outbox.length || stateDirty) flush();
   }catch(e){
