@@ -1,0 +1,13 @@
+Serving HTTP on 0.0.0.0 port 8081 (http://0.0.0.0:8081/) ...
+127.0.0.1 - - [20/Nov/2026 16:22:40] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Nov/2026 16:22:40] code 404, message File not found
+127.0.0.1 - - [20/Nov/2026 16:22:40] "GET /icon-192.png HTTP/1.1" 404 -
+127.0.0.1 - - [20/Nov/2026 16:22:42] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Nov/2026 16:22:43] code 404, message File not found
+127.0.0.1 - - [20/Nov/2026 16:22:43] "GET /icon-192.png HTTP/1.1" 404 -
+127.0.0.1 - - [20/Nov/2026 16:22:47] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Nov/2026 16:22:48] code 404, message File not found
+127.0.0.1 - - [20/Nov/2026 16:22:48] "GET /icon-192.png HTTP/1.1" 404 -
+127.0.0.1 - - [20/Nov/2026 16:22:50] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Nov/2026 16:22:51] code 404, message File not found
+127.0.0.1 - - [20/Nov/2026 16:22:51] "GET /icon-192.png HTTP/1.1" 404 -
