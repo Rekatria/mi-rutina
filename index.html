@@ -795,7 +795,7 @@ const V = {
     'Empujá hacia abajo hasta estirar los brazos (con la cuerda, separá las puntas al final).',
     'Volvé hasta que los antebrazos queden paralelos al piso, sin mover los codos.'],
     tip:'Lo único que se mueve es el antebrazo. Si se te mueven los codos, tenés demasiado peso.'},
-  'dips-maquina': {pat:'dipMachine', eq:'', name:'Dips en máquina', mus:'Tríceps y pecho', steps:[
+  'dips-maquina': {pat:'dipMachine', eq:'', rest:90, restTxt:'1:30 min', name:'Dips en máquina', mus:'Tríceps y pecho', steps:[
     'Sentate y agarrá las manijas de los costados.',
     'Codos hacia atrás, cerca del cuerpo.',
     'Empujá hacia abajo hasta estirar los brazos.',
@@ -882,13 +882,13 @@ const V = {
     'Si te resulta fácil, probá con las piernas más estiradas.'],
     tip:'No te balancees. La espalda queda pegada al respaldo, así que no carga la zona lumbar.'},
 
-  'caminata-inclinada': {pat:'walk', eq:'', unit:'min', name:'Caminata inclinada en caminadora', mus:'Cardio', steps:[
+  'caminata-inclinada': {pat:'walk', eq:'', unit:'min', inc:true, name:'Caminata inclinada en caminadora', mus:'Cardio', steps:[
     'Inclinación al 8–12 % y velocidad de 5–5,5 km/h.',
     'Caminá el tiempo que indica el día, sin agarrarte de las barandas.',
     'Te tiene que costar, pero tenés que poder hablar.',
     'Si se vuelve fácil, subí un poco la inclinación.'],
     tip:'Si te agarrás de la baranda, el ejercicio pierde gran parte del efecto.'},
-  'intervalos': {pat:'bikeFast', eq:'', unit:'min', name:'Intervalos en bici o caminadora', mus:'Cardio', steps:[
+  'intervalos': {pat:'bikeFast', eq:'', unit:'min', inc:true, name:'Intervalos en bici o caminadora', mus:'Cardio', steps:[
     '2 minutos suaves para entrar en calor.',
     '1 minuto rápido y 1 minuto suave. Repetilo 6 o 7 veces.',
     'Terminá con 2 minutos suaves.',
@@ -935,6 +935,11 @@ function fixHistory(){
       if('done' in c) it.done = c.done;
       if(c.skipped) it.skipped = true;
     });
+  });
+  // 23/11/2026: la caminata inclinada fue al 8 %
+  S.history.forEach(s => {
+    const d = new Date(s.ts); if(d.getFullYear()!==2026 || d.getMonth()!==10 || d.getDate()!==23) return;
+    (s.items||[]).forEach(it => { if(it.v==='caminata-inclinada' && it.sets && it.sets[0] && !it.sets[0].inc) it.sets[0].inc = '8'; });
   });
 }
 
@@ -1098,9 +1103,9 @@ function lastFor(vid){
   return null;
 }
 function fmtSets(sets, unit, vid){
-  const w = sets.filter(x=>x.kg!=='' || x.r!=='');
+  const w = sets.filter(x=>x.kg!=='' || x.r!=='' || (x.inc!==undefined && x.inc!==''));
   if(!w.length) return '';
-  if(unit==='min') return w.map(x=>x.r).filter(Boolean).join(' + ')+' min';
+  if(unit==='min'){ const inc = w.map(x=>x.inc).filter(x=>x!==undefined&&x!==''); return w.map(x=>x.r).filter(Boolean).join(' + ')+' min'+(inc.length?' · '+inc.join('/')+' % incl.':''); }
   const kgs = [...new Set(w.map(x=>x.kg))], reps = w.map(x=>x.r||'–').join(', '), u = unit==='seg' ? ' s' : '';
   const cu = DB2.has(vid) ? ' c/u' : '';
   if(kgs.length===1 && kgs[0]!=='') return kgs[0]+' kg'+cu+' × '+reps+u;
@@ -1194,7 +1199,7 @@ function renderHoy(){
     const isOpen = open.has(sl.id);
     const last = lastFor(vid);
     const lastTxt = last ? fmtSets(last.sets, v.unit, vid) : '';
-    const meta = sl.cardio ? reps : `${sl.sets} × ${reps} · ${sl.restTxt}`;
+    const meta = sl.cardio ? reps : `${sl.sets} × ${reps} · ${v.restTxt||sl.restTxt}`;
 
     h += `<div class="card ${it.done?'done':''} ${it.skip?'skip':''} ${isOpen?'open':''}">
       <div class="chead" data-act="toggle" data-slot="${sl.id}">
@@ -1242,6 +1247,11 @@ function renderHoy(){
       if(sl.cardio){
         h += `<div class="sub">Minutos</div>
           <input class="mins" inputmode="numeric" data-slot="${sl.id}" data-f="min" value="${esc(it.min||'')}" placeholder="${last&&last.sets[0]&&last.sets[0].r?esc(last.sets[0].r):(topOf(reps)||'15')}">`;
+        if(v.inc){
+          const lastInc = last && last.sets[0] && last.sets[0].inc ? last.sets[0].inc : '';
+          h += `<div class="sub">Inclinación de la caminadora (%)</div>
+          <input class="mins" inputmode="decimal" data-slot="${sl.id}" data-f="inc" value="${esc(it.inc||'')}" placeholder="${lastInc?esc(lastInc):'8'}">`;
+        }
       }
       h += `<button class="btn pri" data-act="done" data-slot="${sl.id}">${it.done?'Desmarcar':'Marcar como completado'}</button>`;
       if(sl.cardio) h += `<button class="btn ghost" data-act="skip" data-slot="${sl.id}">${it.skip?'Desmarcar "no lo hice"':'No lo hice hoy'}</button>`;
@@ -1300,7 +1310,7 @@ document.addEventListener('click', async e => {
     const sl = R[cur.routine].slots.find(s=>s.id===sid);
     if(it.sets[i].ok){
       if(it.sets.every(x=>x.ok)){ it.done = true; open.delete(sid); toast('¡Ejercicio completado! 💪'); }
-      else startRest(sl.rest, V[sl.opts[it.opt]].name);
+      else { const vv = V[sl.opts[it.opt]]; startRest(vv.rest||sl.rest, vv.name); }
     } else it.done = false;
     scheduleSave(); render(); return;
   }
@@ -1334,7 +1344,7 @@ document.addEventListener('click', async e => {
 });
 document.addEventListener('input', e => {
   const t = e.target;
-  if(t.matches('input.mins')){ touch(); S.current.items[t.dataset.slot].min = t.value.replace(/[^0-9.,]/g,'').replace(',', '.').trim(); scheduleSave(); return; }
+  if(t.matches('input.mins')){ touch(); S.current.items[t.dataset.slot][t.dataset.f==='inc'?'inc':'min'] = t.value.replace(/[^0-9.,]/g,'').replace(',', '.').trim(); scheduleSave(); return; }
   if(!t.matches('.sets input')) return;
   touch();
   S.current.items[t.dataset.slot].sets[+t.dataset.i][t.dataset.f] = t.value.replace(',', '.').trim();
@@ -1342,13 +1352,13 @@ document.addEventListener('input', e => {
 });
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { tab = b.dataset.tab; render(); window.scrollTo({top:0}); });
 
-function hasData(cur){ return Object.values(cur.items).some(it => it.done || it.skip || it.min || (it.sets||[]).some(x=>x.kg!==''||x.r!==''||x.ok)); }
+function hasData(cur){ return Object.values(cur.items).some(it => it.done || it.skip || it.min || it.inc || (it.sets||[]).some(x=>x.kg!==''||x.r!==''||x.ok)); }
 
 async function finish(){
   const cur = S.current, rdef = R[cur.routine], ts = Date.now();
   const rec = {id:'s'+ts, routine:cur.routine, dayName: `${rdef.name} (${rdef.dia.toLowerCase()})`, started:cur.t0||ts, ts, items: rdef.slots.map(sl => {
     const it = cur.items[sl.id], vid = sl.opts[it.opt]||sl.opts[0];
-    const sets = sl.cardio ? (it.min ? [{kg:'', r:it.min}] : [])
+    const sets = sl.cardio ? ((it.min || (V[vid].inc && it.inc)) ? [Object.assign({kg:'', r:it.min||''}, V[vid].inc && it.inc ? {inc:it.inc} : {})] : [])
                            : (it.sets||[]).filter(x=>x.kg!==''||x.r!=='').map(x=>({kg:x.kg, r:x.r}));
     return Object.assign({slot:sl.id, v:vid, name:V[vid].name, unit:V[vid].unit||'reps', done:!!it.done, sets}, it.skip ? {skipped:true} : {});
   })};
