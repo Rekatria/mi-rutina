@@ -857,10 +857,10 @@ const V = {
     'Estirá un brazo hacia adelante y la pierna contraria hacia atrás hasta que queden en línea con el cuerpo. Aguantá 2 segundos.',
     'Volvé despacio y cambiá de lado.'],
     tip:'No arquees la espalda ni gires la cadera al levantar la pierna: imaginá que tenés un vaso de agua apoyado en la espalda.'},
-  'escaladas': {pat:'climbers', eq:'', reps:'30–40 s', unit:'seg', name:'Escaladas (mountain climbers)', mus:'Abdomen, hombros y cardio', steps:[
+  'escaladas': {pat:'climbers', eq:'', reps:'15–20 por pierna', unit:'pierna', name:'Escaladas (mountain climbers)', mus:'Abdomen, hombros y cardio', steps:[
     'Posición de plancha con los brazos estirados: manos debajo de los hombros y cuerpo en línea recta.',
     'Llevá una rodilla hacia el pecho y volvé.',
-    'Alterná las piernas a un ritmo constante.',
+    'Alterná las piernas a un ritmo constante. Contá las reps de cada pierna (15 por pierna = 30 en total).',
     'Mantené la cadera quieta: ni arriba como un triángulo, ni caída.'],
     tip:'Más lento trabaja más el abdomen; más rápido es más cardio. Si se te cae la cadera, bajá el ritmo.'},
   'plancha-lateral': {pat:'sidePlank', eq:'', reps:'20–40 s por lado', unit:'seg', name:'Plancha lateral', mus:'Oblicuos', steps:[
@@ -975,16 +975,16 @@ const R = {
     {id:'d3z', tag:'C', cardio:true, reps:'15 min', opts:['intervalos','cardio-suave','caminata-inclinada']}
   ]},
   '4': {name:'Abdomen en casa', dia:'Martes', home:true, slots:[
-    {id:'c4a', tag:'1', sets:3, reps:'30–45 s', rest:30, restTxt:'30 s', opts:['plancha']},
-    {id:'c4b', tag:'2', sets:3, reps:'20–30 s por lado', rest:30, restTxt:'30 s', opts:['plancha-lateral']},
-    {id:'c4c', tag:'3', sets:3, reps:'10 por lado', rest:30, restTxt:'30 s', opts:['dead-bug','bird-dog']},
-    {id:'c4d', tag:'4', sets:3, reps:'30–40 s', rest:30, restTxt:'30 s', opts:['escaladas']}
+    {id:'c4a', tag:'1', sets:3, reps:'30–45 s', rest:60, restTxt:'1 min', opts:['plancha']},
+    {id:'c4b', tag:'2', sets:3, reps:'20–30 s por lado', rest:60, restTxt:'1 min', opts:['plancha-lateral']},
+    {id:'c4c', tag:'3', sets:3, reps:'10 por lado', rest:60, restTxt:'1 min', opts:['dead-bug','bird-dog']},
+    {id:'c4d', tag:'4', sets:3, reps:'15–20 por pierna', rest:60, restTxt:'1 min', opts:['escaladas']}
   ]},
   '5': {name:'Abdomen en casa', dia:'Jueves', home:true, slots:[
-    {id:'c5a', tag:'1', sets:3, reps:'30–45 s', rest:30, restTxt:'30 s', opts:['plancha']},
-    {id:'c5b', tag:'2', sets:3, reps:'20–30 s por lado', rest:30, restTxt:'30 s', opts:['plancha-lateral']},
-    {id:'c5c', tag:'3', sets:3, reps:'10 por lado', rest:30, restTxt:'30 s', opts:['bird-dog','dead-bug']},
-    {id:'c5d', tag:'4', sets:3, reps:'30–40 s', rest:30, restTxt:'30 s', opts:['escaladas']}
+    {id:'c5a', tag:'1', sets:3, reps:'30–45 s', rest:60, restTxt:'1 min', opts:['plancha']},
+    {id:'c5b', tag:'2', sets:3, reps:'20–30 s por lado', rest:60, restTxt:'1 min', opts:['plancha-lateral']},
+    {id:'c5c', tag:'3', sets:3, reps:'10 por lado', rest:60, restTxt:'1 min', opts:['bird-dog','dead-bug']},
+    {id:'c5d', tag:'4', sets:3, reps:'15–20 por pierna', rest:60, restTxt:'1 min', opts:['escaladas']}
   ]}
 };
 const ORDER = ['1','2','3'];
@@ -1106,14 +1106,14 @@ function fmtSets(sets, unit, vid){
   const w = sets.filter(x=>x.kg!=='' || x.r!=='' || (x.inc!==undefined && x.inc!==''));
   if(!w.length) return '';
   if(unit==='min'){ const inc = w.map(x=>x.inc).filter(x=>x!==undefined&&x!==''); return w.map(x=>x.r).filter(Boolean).join(' + ')+' min'+(inc.length?' · '+inc.join('/')+' % incl.':''); }
-  const kgs = [...new Set(w.map(x=>x.kg))], reps = w.map(x=>x.r||'–').join(', '), u = unit==='seg' ? ' s' : '';
+  const kgs = [...new Set(w.map(x=>x.kg))], reps = w.map(x=>x.r||'–').join(', '), u = unit==='seg' ? ' s' : (unit==='pierna' ? ' por pierna' : '');
   const cu = DB2.has(vid) ? ' c/u' : '';
   if(kgs.length===1 && kgs[0]!=='') return kgs[0]+' kg'+cu+' × '+reps+u;
   if(kgs.length===1) return reps+u;
   return w.map(x=>(x.kg!==''?x.kg+'kg×':'')+(x.r||'–')).join(' · ')+u;
 }
 const fmtDate = ts => new Date(ts).toLocaleDateString('es-UY',{weekday:'short', day:'numeric', month:'short'});
-const unitLabel = v => v.unit==='seg' ? 'seg' : (v.unit==='lado' ? 'reps/lado' : 'reps');
+const unitLabel = v => v.unit==='seg' ? 'seg' : (v.unit==='lado' ? 'reps/lado' : (v.unit==='pierna' ? 'reps/pierna' : 'reps'));
 const esc = s => String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 /* =========================================================

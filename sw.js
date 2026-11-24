@@ -1,5 +1,5 @@
 // Mi Rutina – service worker: la app abre aunque no haya señal.
-const CACHE = 'mi-rutina-v6';
+const CACHE = 'mi-rutina-v7';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
 
 self.addEventListener('install', e => {
