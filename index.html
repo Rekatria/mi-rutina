@@ -226,6 +226,7 @@ function EQ(W,eq){
     case 'bar':    return CI(x,y,10.5,'eqp') + CI(x,y,2.6,'eqd');
     case 'barS':   return CI(x,y,7,'eqp') + CI(x,y,2.2,'eqd');
     case 'db':     return RC(x-5,y-5,10,10,'eqd',2.5);
+    case 'kb':     return `<path d="M${r1(x-4.5)} ${r1(y+5)} L${r1(x-4.5)} ${r1(y-1)} Q${r1(x)} ${r1(y-6)} ${r1(x+4.5)} ${r1(y-1)} L${r1(x+4.5)} ${r1(y+5)}" fill="none" stroke-width="2.6" class="eql"/>` + CI(x,y+9,7,'eqd');
     case 'dbv':    return LN(x,y-7,x,y+7,3,'eql') + RC(x-4.5,y-11,9,5,'eqd',1.5) + RC(x-4.5,y+6,9,5,'eqd',1.5);
     case 'dbh':    return LN(x-7,y,x+7,y,3,'eql') + RC(x-11,y-4.5,5,9,'eqd',1.5) + RC(x+6,y-4.5,5,9,'eqd',1.5);
     case 'handle': return RC(x-2.5,y-5,5,10,'eqd',2);
@@ -591,6 +592,12 @@ const V = {
     'Bajá entre las piernas manteniendo el pecho arriba y los codos dentro de las rodillas.',
     'Subí empujando el piso.'],
     tip:'Es ideal para practicar la técnica de la sentadilla. Bajá controlado, sin rebotar abajo.'},
+  'sentadilla-kettlebell': {pat:'goblet', eq:'kb', name:'Sentadilla con kettlebell (goblet)', mus:'Cuádriceps, glúteos y core', steps:[
+    'Agarrá la kettlebell por los costados del asa (los "cuernos") y sostenela pegada al pecho, con la bola hacia abajo.',
+    'Pies un poco más abiertos que los hombros, puntas apenas hacia afuera.',
+    'Bajá entre las piernas manteniendo el pecho arriba y los codos dentro de las rodillas.',
+    'Subí empujando el piso con todo el pie.'],
+    tip:'Mantené la kettlebell pegada al cuerpo todo el tiempo. Si podés hacer las 10 reps en todas las series, pasá a una más pesada.'},
   'bulgara': {pat:'bulgara', eq:'', unit:'lado', name:'Sentadilla búlgara con mancuernas', mus:'Cuádriceps y glúteos (una pierna)', steps:[
     'De espaldas a un banco, apoyá el empeine de un pie sobre el banco.',
     'Con una mancuerna en cada mano, adelantá el otro pie lo suficiente para que, al bajar, la rodilla quede más o menos sobre el tobillo.',
@@ -967,7 +974,7 @@ const R = {
     {id:'d1z', tag:'C', cardio:true, reps:'15 min', opts:['caminata-inclinada','cardio-suave','intervalos']}
   ]},
   '2': {name:'Piernas', dia:'Miércoles', slots:[
-    {id:'d2a', tag:'1', sets:4, reps:'6–10', rest:150, restTxt:'2–3 min', opts:['sentadilla-barra','sentadilla-smith','goblet']},
+    {id:'d2a', tag:'1', sets:4, reps:'6–10', rest:150, restTxt:'2–3 min', opts:['sentadilla-kettlebell','sentadilla-barra','goblet']},
     {id:'d2b', tag:'2', sets:3, reps:'10–12', rest:120, restTxt:'2 min', opts:['prensa','bulgara','sentadilla-smith']},
     {id:'d2c', tag:'3', sets:3, reps:'8–12', rest:120, restTxt:'2 min', opts:['rumano-mancuernas','hiperextension','abductora']},
     {id:'d2d', tag:'4', sets:3, reps:'10–15', rest:90, restTxt:'1:30 min', opts:['curl-isquios-sentado','curl-isquios-acostado']},
